@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  email     String  @unique
+  name      String
+  senha     String
+  avatarUrl String?
+  posts     Post[]  @relation("UserPosts")
+}
+
+model Categoria {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  nome      String   @unique
+  posts     Post[]
+}
+
+model Post {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  texto       String
+  categoriaId String?   @db.ObjectId
+  categoria   Categoria? @relation(fields: [categoriaId], references: [id])
+  userId      String    @db.ObjectId
+  user        User      @relation("UserPosts", fields: [userId], references: [id])
+  createdAt   DateTime  @default(now())
+
+  midias      Midia[]   // <-- adiciona relação 1:N com mídias
+}
+
+model Midia {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  url     String
+  tipo    String   // "imagem" ou "video"
+  postId  String   @db.ObjectId
+  post    Post     @relation(fields: [postId], references: [id])
+}
+
+
